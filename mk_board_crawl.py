@@ -43,7 +43,7 @@ for item in board_list:
     content = detail_soup.find("div", {"class" : "pointColor04"})                       # 내용
     
     attach = detail_soup.find("a", {"class" : "btn btn-m-line bk2 btn-file-down"})
-    attach_url = attach.get("href")                                                            # 첨부파일 URL
+    attach_url = attach.get("href")                                                     # 첨부파일 URL
 
     
     # print(title.text)
