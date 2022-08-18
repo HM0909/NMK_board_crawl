@@ -9,8 +9,26 @@ from urllib import request
 
 base_url = "https://www.museum.go.kr"
 board_url = base_url + "/site/main/archive/post/category/category_52"
+login_url = base_url + "/site/main/member/public/login?"
 
 driver = webdriver.Chrome(executable_path='C:\hm_py\chromedriver')
+driver.get(login_url)
+
+
+# 로그인
+user_id = ""
+password = ""
+
+
+driver.find_element_by_id('id').send_keys(user_id)
+time.sleep(5)
+driver.find_element_by_id('pwd').send_keys(password)
+time.sleep(5)
+driver.find_element_by_xpath('//*[@id="contents"]/div[2]/div/div[1]/div[2]/div/a').click()
+time.sleep(5)
+
+driver.get(board_url)
+
 soup = bs(ur.urlopen(board_url).read(), 'html.parser')
 
 
@@ -24,7 +42,8 @@ for item in board_list:
     link_url = link.get("href")                                                         # 상세 URL
     
     driver.get(base_url + link_url)
-        
+
+
         
 # 세부사항
     detail_html = driver.page_source 
