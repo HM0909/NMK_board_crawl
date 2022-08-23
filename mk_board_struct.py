@@ -8,9 +8,29 @@ from crawl_manager import *
 
 # 국립중앙박물관(National Museum of Korea)
 
-base_url = "https://www.museum.go.kr"
-board_url = base_url + "/site/main/archive/post/category/category_52"
-login_url = base_url + "/site/main/member/public/login?"
+BASE_URL = "https://www.museum.go.kr"
+BOARD_URL = BASE_URL + "/site/main/archive/post/category/category_52"
+LOGIN_URL = BASE_URL + "/site/main/member/public/login?"
+
+driver = webdriver.Chrome(executable_path='C:\hm_py\chromedriver')
+driver.get(LOGIN_URL)
+
+
+# 로그인
+user_id = "haemin9299"
+password = "@lhmlove1524"
+
+
+driver.find_element_by_id('id').send_keys(user_id)
+time.sleep(5)
+driver.find_element_by_id('pwd').send_keys(password)
+time.sleep(5)
+driver.find_element_by_xpath('//*[@id="contents"]/div[2]/div/div[1]/div[2]/div/a').click()
+time.sleep(5)
+
+driver.get(BOARD_URL)
+
+soup = bs(ur.urlopen(BOARD_URL).read(), 'html.parser')
 
 
 class ChosunCrawlManager(CrawlManager):
@@ -18,38 +38,25 @@ class ChosunCrawlManager(CrawlManager):
         self.driver = driver
 
 
-    # 로그인
-    user_id = ""
-    password = ""
-
-
-    driver.find_element_by_id('id').send_keys(user_id)
-    time.sleep(5)
-    driver.find_element_by_id('pwd').send_keys(password)
-    time.sleep(5)
-    driver.find_element_by_xpath('//*[@id="contents"]/div[2]/div/div[1]/div[2]/div/a').click()
-    time.sleep(5)
-
-    driver.get(board_url)
-
-    soup = bs(ur.urlopen(board_url).read(), 'html.parser')
-
-
-
-    # 자료 번호
-    board_main = soup.find("div",  {"class" : "board-list-tbody"})
-    board_list = board_main.find_all("ul")
-
-    for item in board_list:
-        data = item.find("li", {"class":"l"})
-        link = data.find("a")
-        link_url = link.get("href")                                                         # 상세 URL
+    def list(self):     
+        self.driver.get(BASE_URL)
         
-        driver.get(base_url + link_url)
+        # 자료 번호
+        board_main = soup.find("div",  {"class" : "board-list-tbody"})
+        board_list = board_main.find_all("ul")
 
-
+        for item in board_list:
+            data = item.find("li", {"class":"l"})
+            link = data.find("a")
+            link_url = link.get("href")                                                         # 상세 URL
             
-    # 세부사항
+            driver.get(BASE_URL + link_url)
+
+
+    def detail(self, url):
+        detail_html = url
+                
+        # 세부사항
         detail_html = driver.page_source 
         detail_soup = bs(detail_html, 'html.parser')
 
@@ -69,21 +76,24 @@ class ChosunCrawlManager(CrawlManager):
         attach_url = attach.get("href")                                                     # 첨부파일 URL
 
         
+        return [title, detail_html, writer, reg_date, content]
+
+
         # print(title.text)
         # print(writer.text)
         # print(reg_date.text)
         # print(read_count.text)
         # print(content.text)
         # print(attach_url)
-    
         
-    # # 파일 다운로드
-    #     file_info = detail_soup.find("ul", {"class" : "flie-down-list m-file"})
-    #     file_name = file_info.find("strong").text
-    #     file_url = base_url + attach_url
-        
-    #     ext = ".pdf"
-    #     pos = file_name.find(ext)
+            
+        # # 파일 다운로드
+        #     file_info = detail_soup.find("ul", {"class" : "flie-down-list m-file"})
+        #     file_name = file_info.find("strong").text
+        #     file_url = BASE_URL + attach_url
+            
+        #     ext = ".pdf"
+        #     pos = file_name.find(ext)
 
-    #     savename = "C:/hm_py/board_crawl/" + file_name[:pos]+ext
-    #     request.urlretrieve(file_url, savename)
+        #     savename = "C:/hm_py/board_crawl/" + file_name[:pos]+ext
+        #     request.urlretrieve(file_url, savename)
