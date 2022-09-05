@@ -14,7 +14,7 @@ class DatabaseManager:
     
     def datasource(self):           
         try:
-            root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),".."))
+            root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),"."))
             doc = yaml.load(open(os.path.join(root_dir, 'config', 'datasource.yml'), 'r'), Loader=yaml.SafeLoader)
             return doc[self.database_id]
         except IOError as e:
