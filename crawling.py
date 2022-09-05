@@ -5,7 +5,7 @@ import time
 from webdriver_manager.chrome import ChromeDriverManager    # Mac
 from db_manager import DatabaseManager
 
-HEADER = ['제목', '작성자', '등록일', '내용', '조회수', '첨부파일URL']
+HEADER = ['제목', '작성자', '내용', '상세URL', '조회수', '등록일', '첨부파일URL']
 ARGV_COUNT = 2
 DATABASE_ID = "local"
 
@@ -21,8 +21,8 @@ def login():
     driver.get(login_url)
 
     # 로그인
-    user_id = "haemin9299"
-    password = "@lhmlove1524"
+    user_id = ""
+    password = ""
 
     driver.find_element_by_id('id').send_keys(user_id)
     time.sleep(5)
@@ -52,26 +52,28 @@ def crawling():
 
         print(detail(link_url, writer))
 
-        datas.append(detail(link_url, writer))
+        datas.append(detail(link_url, writer))  # 크롤링 결과를 datas 라는 list 변수에 저장
 
-    if len(datas) > 0:
-        db = DatabaseManager(DATABASE_ID)
-        db.connection()
-        
-        query = '''
-                INSERT INTO borad (TITLE, LINK_URL, WRITER, PUBLISH_DATE, CONTENT, JOURNAL_ID, REG_DATE)
-                VALUES (
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    %s,
-                    now()
-                )                    
-            '''        
+    if len(datas) > 0:  # list의 개수가 1개라도 있는 경우만 아래 소스 실행
+            db = DatabaseManager(DATABASE_ID)   # 데이터베이스 정보 생성
+            db.connection()                     # 데이터베이스 연결
+            
+            query = '''
+                    INSERT INTO board (TITLE, WRITER, CONTENT, LINK_URL, READ_COUNT, REG_DATE, ATTACH_URL)
+                    VALUES (
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s,
+                        %s
+                    )                    
+                '''
 
-        db.execute_query(query, datas)
+            result = db.execute_query_bulk(query, datas)    # 여러 행을 한번에 실행 해서 등록 -> 1건씩 등록하는것보다 한번에 등록하는게 속도가 빠름
+
+
 
 # 상세 크롤링
 def detail(detail_url, writer):
@@ -96,7 +98,8 @@ def detail(detail_url, writer):
     attach = detail_soup.find("a", {"class" : "btn btn-m-line bk2 btn-file-down"})
     attach_url = attach.get("href")                                                            # 첨부파일 URL
             
-    return [title.text, writer.strip(), content.text, detail_url, reg_date, read_count, attach_url] 
+    return [title.text, writer.strip(), content.text, detail_url, read_count, reg_date, attach_url] 
+
 
 
 def main(): 
