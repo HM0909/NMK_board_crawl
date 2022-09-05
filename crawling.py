@@ -21,8 +21,8 @@ def login():
     driver.get(login_url)
 
     # 로그인
-    user_id = "haemin9299"
-    password = "@lhmlove1524"
+    user_id = ""
+    password = ""
 
     driver.find_element_by_id('id').send_keys(user_id)
     time.sleep(5)
