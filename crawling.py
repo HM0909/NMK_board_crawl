@@ -21,8 +21,8 @@ def login():
     driver.get(login_url)
 
     # 로그인
-    user_id = "haemin9299"
-    password = "@lhmlove1524"
+    user_id = ""
+    password = ""
 
     driver.find_element_by_id('id').send_keys(user_id)
     time.sleep(5)
@@ -96,7 +96,6 @@ def detail(detail_url, writer):
     attach = detail_soup.find("a", {"class" : "btn btn-m-line bk2 btn-file-down"})
     attach_url = attach.get("href")                                                            # 첨부파일 URL
             
-    return [title.text, writer.strip(), content.text, detail_url, reg_date, read_count, attach_url] 
 
 
 def main(): 
