@@ -1,12 +1,17 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from bs4 import BeautifulSoup as bs
 import time
+from db_manager import DatabaseManager
+
 
 # 국립중앙박물관(NMK)
 
 base_url = "https://www.museum.go.kr"
 board_url = base_url + "/site/main/archive/post/category/category_52" 
 login_url = base_url + "/site/main/member/public/login?returnUrl=https%3A%2F%2Fwww.museum.go.kr%2Fsite%2Fmain%2Fhome"
+
+DATABASE_ID = "local"
 
 driver = webdriver.Chrome(executable_path='C:\hm_py\chromedriver')
 
@@ -35,6 +40,8 @@ def crawling():
     board_main = soup.find("div",  {"class" : "board-list-tbody"}) 
     board_body = board_main.find_all("ul")
    
+    datas =[]
+
     for list in board_body:
         board_list = list.find_all("li")
         board_number = board_list[0].text                                  # 번호
@@ -47,10 +54,35 @@ def crawling():
         url = link.get("href")                                                         
         link_url = "https://www.museum.go.kr" + url                                   # 상세 URL
 
-        detail(link_url)
+        detail(board_number, board_Type, board_group, board_wirter, link_url)
+          
+        datas.append(detail(board_number, board_Type, board_group, board_wirter, link_url))
 
 
-def detail(link_url):       
+
+    if len(datas) > 0:  
+                    db = DatabaseManager(DATABASE_ID)  
+                    db.connection()  
+                    query = '''  
+                            INSERT INTO board_nmk (BD_NUMBER, BD_TYPE, BD_GROUP, LINK_URL, TITLE, WRITER, CONTENT, REG_DATE, READ_COUNT, ATTACH_URL)    
+                            VALUES (  
+                                %s,
+                                %s,   
+                                %s,  
+                                %s,  
+                                %s,  
+                                %s,
+                                %s,
+                                %s, 
+                                %s, 
+                                %s   
+                            )  
+                        '''          
+                    db.execute_query_bulk(query, datas)
+
+
+
+def detail(board_number, board_Type, board_group, board_wirter, link_url):       
     driver.get(link_url)  
          
     detail_html = driver.page_source
@@ -73,12 +105,15 @@ def detail(link_url):
     attach_body = detail_main.find("ul",  {"class" : "flie-down-list m-file"})
     attach = attach_body.find_all("li")
     
+    attach_url = ""
+    
     for list in attach:
         attach_all = list.find("a")
         attach_url= attach_all.get("href")                                                   # 첨부파일 URL                
-                                                            
-        print(attach_url)
     
+                                                            
+    return [board_number, board_Type, board_group, link_url, title, board_wirter, content, reg_date, read_count, attach_url]
+  
     
 def main(): 
 
